@@ -13,7 +13,10 @@ spec:
       value: "24"
     - name: ETCD_DEBUG
       value: "false"
-  version: "v3.5.7"
+    - name: ETCD_HEARTBEAT_INTERVAL
+      value: "200"
+  version: "v3.5.17-amd64"
+  repository: gcr.io/etcd-development/etcd
 ---
 apiVersion: v1
 kind: Service

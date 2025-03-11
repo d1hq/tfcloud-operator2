@@ -16,16 +16,17 @@ import (
 )
 
 const (
-	PostgresAppName  = "postgres"
-	PostgresImage    = "bitnami/postgresql:latest"
-	PostgresPassword = "tribefire"
-	PostgresUser     = "tribefire"
-	PostgresDatabase = "postgres"
-	PostgresPort     = 5432
+	PostgresAppName      = "postgres"
+	PostgresPassword     = "tribefire"
+	PostgresUser         = "tribefire"
+	PostgresDatabase     = "postgres"
+	PostgresPort         = 5432
+	PostgresDefaultImage = "bitnami/postgresql:17"
 )
 
 var projectId = os.Getenv("TRIBEFIRE_GCP_DATABASES_PROJECT_ID")
 var instanceId = os.Getenv("TRIBEFIRE_GCP_DATABASES_INSTANCE_ID")
+var postgresImage = getEnvOrDefault("TRIBEFIRE_POSTGRESQL_IMAGE", PostgresDefaultImage)
 
 type TribefireDatabaseMgr interface {
 	CreateDatabase(tf *tribefirev1.TribefireRuntime) (*providers.DatabaseDescriptor, error)
@@ -133,7 +134,7 @@ func (d *DefaultTribefireDatabaseMgr) createLocalDatabase(tf *tribefirev1.Tribef
 			Containers: []core.Container{
 				{
 					Name:            PostgresAppName,
-					Image:           PostgresImage,
+					Image:           postgresImage,
 					ImagePullPolicy: getPullPolicy(),
 					Ports: []core.ContainerPort{
 						{

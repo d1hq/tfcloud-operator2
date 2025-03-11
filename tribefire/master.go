@@ -10,18 +10,19 @@ import (
 )
 
 const (
-	HttpPort                = 8080
-	JpdaPort                = 8000
-	HealthCheckPort         = 8080
-	MaxUnavailable          = 1
-	MaxSurge                = 1
-	HealthCheckPath         = "/rpc"
-	IngressPathMaster       = "/services"
-	MasterAppName           = "tribefire-master"
-	PostgresCheckerImage    = "/tribefire-cloud/postgres-checker"
-	SystemDbCredentialsFile = "/secrets/cloudsql/system.json"
-	PostgresCheckerTag      = "0.0.4"
+	HttpPort                    = 8080
+	JpdaPort                    = 8000
+	HealthCheckPort             = 8080
+	MaxUnavailable              = 1
+	MaxSurge                    = 1
+	HealthCheckPath             = "/rpc"
+	IngressPathMaster           = "/services"
+	MasterAppName               = "tribefire-master"
+	PostgresDefaultCheckerImage = "docker.artifactory.braintribe.com/tribefire-cloud/postgres-checker:0.0.4" //previous version is the default
+	SystemDbCredentialsFile     = "/secrets/cloudsql/system.json"
 )
+
+var postgresCheckerImage = getEnvOrDefault("TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE", PostgresDefaultCheckerImage)
 
 var defaultMode int32 = 420
 
@@ -87,7 +88,7 @@ func NewTribefireMasterDeployment(tf *tribefirev1.TribefireRuntime, component *t
 	if tf.IsLocalDatabase() && common.PostgresCheckerEnabled() {
 		postgresCheckerContainer := core.Container{
 			Name:            "postgres-checker",
-			Image:           getDockerHostUrl() + PostgresCheckerImage + ":" + PostgresCheckerTag,
+			Image:           postgresCheckerImage,
 			ImagePullPolicy: "Always",
 			Env: []core.EnvVar{
 				{Name: "PGHOST", Value: DefaultResourceName(tf, PostgresAppName)},

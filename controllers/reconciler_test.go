@@ -175,9 +175,26 @@ func (m *MockReader) List(ctx context.Context, list client.ObjectList, opts ...c
 	return args.Error(0)
 }
 
-func (m *MockStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.UpdateOption) error {
-
+func (m *MockStatusWriter) Update(ctx context.Context, obj client.Object, opts ...client.SubResourceUpdateOption) error {
 	args := m.Called(ctx, obj)
+	return args.Error(0)
+}
+
+// Add Patch method
+func (m *MockStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.SubResourcePatchOption) error {
+	args := m.Called(ctx, obj, patch)
+	return args.Error(0)
+}
+
+// Add Create method
+func (m *MockStatusWriter) Create(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceCreateOption) error {
+	args := m.Called(ctx, obj, subResource)
+	return args.Error(0)
+}
+
+// Add Get method if needed
+func (m *MockStatusWriter) Get(ctx context.Context, obj client.Object, subResource client.Object, opts ...client.SubResourceGetOption) error {
+	args := m.Called(ctx, obj, subResource)
 	return args.Error(0)
 }
 
@@ -209,11 +226,6 @@ func (m *MockWriter) DeleteAllOf(ctx context.Context, obj client.Object, opts ..
 func (m *MockStatusClient) Status() client.StatusWriter {
 	args := m.Called()
 	return args.Get(0).(client.StatusWriter)
-}
-
-func (m *MockStatusWriter) Patch(ctx context.Context, obj client.Object, patch client.Patch, opts ...client.PatchOption) error {
-	args := m.Called()
-	return args.Error(0)
 }
 
 // EventRecorder mock
@@ -502,7 +514,11 @@ func TestReconcileRuntimeSpecNoChangeStatusUpdateOk(t *testing.T) {
 	mockEtcdChecker := new(MockEtcdChecker)
 
 	mockStatusClient.On("Status").Return(mockStatusWriter)
+
 	mockStatusWriter.On("Update", mock.Anything, mock.Anything).Return(nil)
+	mockStatusWriter.On("Create", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	mockStatusWriter.On("Patch", mock.Anything, mock.Anything, mock.Anything).Return(nil)
+	mockStatusWriter.On("Get", mock.Anything, mock.Anything, mock.Anything).Return(nil)
 
 	mockEtcdChecker.On("Check", mock.Anything).Return(nil)
 
@@ -905,6 +921,18 @@ func (h MockedClient) Scheme() *runtime.Scheme {
 }
 
 func (h MockedClient) RESTMapper() meta.RESTMapper {
+	return nil
+}
+
+func (h MockedClient) GroupVersionKindFor(obj runtime.Object) (schema.GroupVersionKind, error) {
+	return schema.GroupVersionKind{}, nil
+}
+
+func (h MockedClient) IsObjectNamespaced(obj runtime.Object) (bool, error) {
+	return true, nil
+}
+
+func (h MockedClient) SubResource(subResource string) client.SubResourceClient {
 	return nil
 }
 

@@ -1,11 +1,18 @@
 
 # Image URL to use all building/pushing image targets
 #OPERATOR_IMAGE = dockerregistry.example.com/tribefire-cloud/operator-development
-OPERATOR_DOCKER_HOST ?= dockerregistry.example.com
+OPERATOR_DOCKER_HOST ?= docker.artifactory.braintribe.com
+#OPERATOR_DOCKER_HOST = 254787864596.dkr.ecr.eu-central-1.amazonaws.com
+
 OPERATOR_IMAGE = $(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator
+#OPERATOR_IMAGE = $(OPERATOR_DOCKER_HOST)/ecr-test
+
 OPERATOR_IMAGE_DBG =$(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator-dbg
-OPERATOR_TAG = 2.1.2
+OPERATOR_TAG = 2.2
+
 IMG ?= $(OPERATOR_IMAGE):$(OPERATOR_TAG)
+TRIBEFIRE_POSTGRESQL_IMAGE ?= bitnami/postgresql:16
+TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/postgres-checker:1.0
 
 # NAME_PREFIX is pre-prepended to all operator related resources, but not to tribefire resources
 # such as the tribefire-master
@@ -13,6 +20,7 @@ OPERATOR_NAMESPACE ?= tribefire
 OPERATOR_NAME_PREFIX ?= tfcloud-
 
 ENVTEST_K8S_VERSION = 1.25.0
+TRAEFIK_VERSION=27.0.2 #If you change this make sure you update CRD too
 
 TRAEFIK_NAMESPACE ?= traefik
 CERTMANAGER_NAMESPACE ?= cert-manager
@@ -115,6 +123,7 @@ exec-debug: build set-debug-env
 # If you wish built the manager image targeting other platforms you can use the --platform flag.
 # (i.e. docker build --platform linux/arm64 ). However, you must enable docker buildKit for it.
 # More info: https://docs.docker.com/develop/develop-images/build_enhancements/
+# Setting env var DOCKER_DEFAULT_PLATFORM=linux/amd64 should also work
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
 	docker build -t ${IMG} --platform linux/amd64  .
@@ -159,7 +168,7 @@ uninstall: manifests ## Uninstall CRDs from the K8s cluster specified in ~/.kube
 .PHONY: pre-deploy-undeploy
 pre-deploy-undeploy:
 ## this sed approach is far from ideal. I tried using kustomize but this: https://github.com/kubernetes-sigs/kustomize/issues/4731
-	cd config/manager && sed -e "s/@@dockerhost@@/$(OPERATOR_DOCKER_HOST)/g" <operator.properties.template > operator.properties
+	cd config/manager && sed -e "s|@@dockerhost@@|$(OPERATOR_DOCKER_HOST)|g; s|@@postgresimage@@|$(TRIBEFIRE_POSTGRESQL_IMAGE)|g; s|@@postgrescheckerimage@@|$(TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE)|g" < operator.properties.template > operator.properties
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	cd config/default && $(KUSTOMIZE) edit set namespace $(OPERATOR_NAMESPACE)
 	cd config/default && $(KUSTOMIZE) edit set nameprefix $(OPERATOR_NAME_PREFIX)$(OPERATOR_NAMESPACE)-
@@ -193,7 +202,7 @@ ENVTEST ?= $(LOCALBIN)/setup-envtest
 
 ## Tool Versions
 KUSTOMIZE_VERSION ?= v4.5.5
-CONTROLLER_TOOLS_VERSION ?= v0.9.2
+CONTROLLER_TOOLS_VERSION ?= v0.16.5
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -219,7 +228,7 @@ deploy-cert-manager:
 	helm upgrade --install cert-manager jetstack/cert-manager \
       --namespace $(CERTMANAGER_NAMESPACE) \
       --create-namespace \
-      --version v1.10.0 \
+      --version v1.12.16 \
       --set installCRDs=true
 
 .PHONY: deploy-cert-manager
@@ -230,9 +239,12 @@ undeploy-cert-manager:
 deploy-traefik:
 	helm repo add --force-update traefik https://traefik.github.io/charts
 	helm repo update
+	kubectl create namespace $(TRAEFIK_NAMESPACE) || echo "Namespace $(TRAEFIK_NAMESPACE) already exists"
+	kubectl -n $(TRAEFIK_NAMESPACE) apply -f https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+	kubectl -n $(TRAEFIK_NAMESPACE) apply -f https://raw.githubusercontent.com/traefik/traefik/v2.11/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
 	helm upgrade --install traefik traefik/traefik \
 		--create-namespace --namespace $(TRAEFIK_NAMESPACE) \
-		--values hack/traefik-helm-values.yaml
+		--values hack/traefik-helm-values-v27.yaml --version ${TRAEFIK_VERSION}
 	kubectl apply -f hack/traefik-middleware.yaml
 
 .PHONY: undeploy-traefik

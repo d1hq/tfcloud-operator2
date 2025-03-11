@@ -3,8 +3,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.9.2
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.16.5
   name: tribefireruntimes.tribefire.cloud
 spec:
   group: tribefire.cloud
@@ -46,41 +45,48 @@ spec:
       openAPIV3Schema:
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
           spec:
-            description: The top level description of a `TribefireRuntime`. Describes
-              the list of desired components, which backend to use and more.
+            description: |-
+              The top level description of a `TribefireRuntime`. Describes the list of desired components, which backend to use
+              and more.
             properties:
               backend:
                 description: The backend configuration for this TribefireRuntime,
                   e.g. configuration for `etcd` backend
                 properties:
                   parameters:
-                    description: 'Configuration properties for the chosen Tribefire
-                      backend, e.g. the `etcd` URL<br/><br/> Defaults (for etcd):
-                      `name=''url''` `value=''http://tf-etcd-cluster-client:2379''`'
+                    description: |-
+                      Configuration properties for the chosen Tribefire backend, e.g. the `etcd` URL<br/><br/>
+                      Defaults (for etcd): `name='url'` `value='http://tf-etcd-cluster-client:2379'`
                     items:
                       description: This element is used to set specific properties
                         for the chosen Tribefire backend, e.g. URLs and credentials
                       properties:
                         name:
-                          description: 'name of the backend property<br/><br/> Examples:
-                            `username`, `password`, `url`'
+                          description: |-
+                            name of the backend property<br/><br/>
+                            Examples: `username`, `password`, `url`
                           type: string
                         value:
-                          description: 'the value of the backend configuration property
-                            Examples: `https://tf-etcd.etcd.svc.cluster.local`, `etcd-user`,
-                            `etcd-password`'
+                          description: |-
+                            the value of the backend configuration property
+                            Examples: `https://tf-etcd.etcd.svc.cluster.local`, `etcd-user`, `etcd-password`
                           type: string
                       required:
                       - name
@@ -88,9 +94,9 @@ spec:
                       type: object
                     type: array
                   type:
-                    description: 'The backend for Tribefire<br/><br/> Possible values:
-                      `activemq`, `etcd` (note: ActiveMQ is supported for compatibility
-                      only)'
+                    description: |-
+                      The backend for Tribefire<br/><br/>
+                      Possible values: `activemq`, `etcd` (note: ActiveMQ is supported for compatibility only)
                     enum:
                     - etcd
                     - activemq
@@ -102,18 +108,20 @@ spec:
                 items:
                   properties:
                     apiPath:
-                      description: 'absolute path (starting with `/`) for this component<br/><br/>
-                        Example: `/tribefire-control-center`'
+                      description: |-
+                        absolute path (starting with `/`) for this component<br/><br/>
+                        Example: `/tribefire-control-center`
                       pattern: ^/[a-z-]*$|^$
                       type: string
                     customHealthCheckPath:
-                      description: can be used to specify a custom health check endpoint
-                        URI. The default is `/healthz` for non-cartridge components
-                        and `/` for cartridges
+                      description: |-
+                        can be used to specify a custom health check endpoint URI. The default is `/healthz` for non-cartridge
+                        components and `/` for cartridges
                       type: string
                     enableJpda:
-                      description: 'enables remote debugging capabilities via JPDA<br/><br/>
-                        Possible values: `true`, `false`'
+                      description: |-
+                        enables remote debugging capabilities via JPDA<br/><br/>
+                        Possible values: `true`, `false`
                       type: string
                     env:
                       description: The environment for this component. Just a standard
@@ -127,16 +135,16 @@ spec:
                               a C_IDENTIFIER.
                             type: string
                           value:
-                            description: 'Variable references $(VAR_NAME) are expanded
-                              using the previously defined environment variables in
-                              the container and any service environment variables.
-                              If a variable cannot be resolved, the reference in the
-                              input string will be unchanged. Double $$ are reduced
-                              to a single $, which allows for escaping the $(VAR_NAME)
-                              syntax: i.e. "$$(VAR_NAME)" will produce the string
-                              literal "$(VAR_NAME)". Escaped references will never
-                              be expanded, regardless of whether the variable exists
-                              or not. Defaults to "".'
+                            description: |-
+                              Variable references $(VAR_NAME) are expanded
+                              using the previously defined environment variables in the container and
+                              any service environment variables. If a variable cannot be resolved,
+                              the reference in the input string will be unchanged. Double $$ are reduced
+                              to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+                              "$$(VAR_NAME)" will produce the string literal "$(VAR_NAME)".
+                              Escaped references will never be expanded, regardless of whether the variable
+                              exists or not.
+                              Defaults to "".
                             type: string
                           valueFrom:
                             description: Source for the environment variable's value.
@@ -149,10 +157,13 @@ spec:
                                     description: The key to select.
                                     type: string
                                   name:
-                                    description: 'Name of the referent. More info:
-                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind,
-                                      uid?'
+                                    default: ""
+                                    description: |-
+                                      Name of the referent.
+                                      This field is effectively required, but due to backwards compatibility is
+                                      allowed to be empty. Instances of this type with an empty value here are
+                                      almost certainly wrong.
+                                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                     type: string
                                   optional:
                                     description: Specify whether the ConfigMap or
@@ -163,11 +174,9 @@ spec:
                                 type: object
                                 x-kubernetes-map-type: atomic
                               fieldRef:
-                                description: 'Selects a field of the pod: supports
-                                  metadata.name, metadata.namespace, `metadata.labels[''<KEY>'']`,
-                                  `metadata.annotations[''<KEY>'']`, spec.nodeName,
-                                  spec.serviceAccountName, status.hostIP, status.podIP,
-                                  status.podIPs.'
+                                description: |-
+                                  Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['<KEY>']`, `metadata.annotations['<KEY>']`,
+                                  spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.
                                 properties:
                                   apiVersion:
                                     description: Version of the schema the FieldPath
@@ -182,11 +191,9 @@ spec:
                                 type: object
                                 x-kubernetes-map-type: atomic
                               resourceFieldRef:
-                                description: 'Selects a resource of the container:
-                                  only resources limits and requests (limits.cpu,
-                                  limits.memory, limits.ephemeral-storage, requests.cpu,
-                                  requests.memory and requests.ephemeral-storage)
-                                  are currently supported.'
+                                description: |-
+                                  Selects a resource of the container: only resources limits and requests
+                                  (limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.
                                 properties:
                                   containerName:
                                     description: 'Container name: required for volumes,
@@ -216,10 +223,13 @@ spec:
                                       be a valid secret key.
                                     type: string
                                   name:
-                                    description: 'Name of the referent. More info:
-                                      https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
-                                      TODO: Add other useful fields. apiVersion, kind,
-                                      uid?'
+                                    default: ""
+                                    description: |-
+                                      Name of the referent.
+                                      This field is effectively required, but due to backwards compatibility is
+                                      allowed to be empty. Instances of this type with an empty value here are
+                                      almost certainly wrong.
+                                      More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names
                                     type: string
                                   optional:
                                     description: Specify whether the Secret or its
@@ -235,13 +245,15 @@ spec:
                         type: object
                       type: array
                     image:
-                      description: 'Docker image to be used for this component.<br/><br/>
-                        Example: `dockerregistry.example.com/cloud/tribefire-master`'
+                      description: |-
+                        Docker image to be used for this component.<br/><br/>
+                        Example: `dockerregistry.example.com/cloud/tribefire-master`
                       minLength: 10
                       type: string
                     imageTag:
-                      description: 'The image tag for the referenced Docker image<br/><br/>
-                        Example: `2.0-latest`'
+                      description: |-
+                        The image tag for the referenced Docker image<br/><br/>
+                        Example: `2.0-latest`
                       type: string
                     labels:
                       additionalProperties:
@@ -249,12 +261,14 @@ spec:
                       description: Set of labels that should be attached to this component
                       type: object
                     logJson:
-                      description: 'Use JSON logging for this component<br/><br/>
-                        Possible values: `true`, `false`'
+                      description: |-
+                        Use JSON logging for this component<br/><br/>
+                        Possible values: `true`, `false`
                       type: string
                     logLevel:
-                      description: 'The loglevel for this component.<br/><br/> Possible
-                        values: `SEVERE`,`WARNING`,`INFO`,`CONFIG`,`FINE`,`FINER`,`FINEST`'
+                      description: |-
+                        The loglevel for this component.<br/><br/>
+                        Possible values: `SEVERE`,`WARNING`,`INFO`,`CONFIG`,`FINE`,`FINER`,`FINEST`
                       enum:
                       - SEVERE
                       - WARNING
@@ -282,19 +296,22 @@ spec:
                           storage to a component
                         properties:
                           name:
-                            description: 'symbolic name of the volume<br/><br/> Example:
-                              `nfs-documents`'
+                            description: |-
+                              symbolic name of the volume<br/><br/>
+                              Example: `nfs-documents`
                             maxLength: 63
                             type: string
                           volumeClaimName:
-                            description: 'The name of the underlying `PersistentVolumeClaim`.
-                              Please note that you need to setup the PVC before referencing
-                              it here.<br/><br/> Example: `nfs-documents-claim`'
+                            description: |-
+                              The name of the underlying `PersistentVolumeClaim`. Please note that you need to setup
+                              the PVC before referencing it here.<br/><br/>
+                              Example: `nfs-documents-claim`
                             maxLength: 63
                             type: string
                           volumeMountPath:
-                            description: 'The mount path where the PVC should be available
-                              inside the Tribefire pods.<br/><br/> Example: `/nfs/documents`'
+                            description: |-
+                              The mount path where the PVC should be available inside the Tribefire pods.<br/><br/>
+                              Example: `/nfs/documents`
                             pattern: ^(/)?([^/\0]+(/)?)+$
                             type: string
                         required:
@@ -304,20 +321,23 @@ spec:
                         type: object
                       type: array
                     protocol:
-                      description: 'The protocol that should be used for the public
-                        URL <br/><br/> Possible values: `http`, `https`'
+                      description: |-
+                        The protocol that should be used for the public URL <br/><br/>
+                        Possible values: `http`, `https`
                       enum:
                       - http
                       - https
                       type: string
                     publicUrl:
-                      description: 'The publicly accessible URL for this component<br/><br/>
-                        Example: `https://demo-documents.tribefire.cloud/services`'
+                      description: |-
+                        The publicly accessible URL for this component<br/><br/>
+                        Example: `https://demo-documents.tribefire.cloud/services`
                       pattern: ^https?:\/\/.*$
                       type: string
                     replicas:
-                      description: 'number of replicas for this component<br/><br/>
-                        Possible values: `1-10`'
+                      description: |-
+                        number of replicas for this component<br/><br/>
+                        Possible values: `1-10`
                       format: int32
                       maximum: 10
                       minimum: 1
@@ -326,6 +346,37 @@ spec:
                       description: The resource requirements for this component. Standard
                         `ResourceRequirements` as per `PodSpec`
                       properties:
+                        claims:
+                          description: |-
+                            Claims lists the names of resources, defined in spec.resourceClaims,
+                            that are used by this container.
+
+                            This is an alpha field and requires enabling the
+                            DynamicResourceAllocation feature gate.
+
+                            This field is immutable. It can only be set for containers.
+                          items:
+                            description: ResourceClaim references one entry in PodSpec.ResourceClaims.
+                            properties:
+                              name:
+                                description: |-
+                                  Name must match the name of one entry in pod.spec.resourceClaims of
+                                  the Pod where this field is used. It makes that resource available
+                                  inside a container.
+                                type: string
+                              request:
+                                description: |-
+                                  Request is the name chosen for a request in the referenced claim.
+                                  If empty, everything from the claim is made available, otherwise
+                                  only the result of this request.
+                                type: string
+                            required:
+                            - name
+                            type: object
+                          type: array
+                          x-kubernetes-list-map-keys:
+                          - name
+                          x-kubernetes-list-type: map
                         limits:
                           additionalProperties:
                             anyOf:
@@ -333,8 +384,9 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: 'Limits describes the maximum amount of compute
-                            resources allowed. More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                          description: |-
+                            Limits describes the maximum amount of compute resources allowed.
+                            More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                           type: object
                         requests:
                           additionalProperties:
@@ -343,11 +395,11 @@ spec:
                             - type: string
                             pattern: ^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$
                             x-kubernetes-int-or-string: true
-                          description: 'Requests describes the minimum amount of compute
-                            resources required. If Requests is omitted for a container,
-                            it defaults to Limits if that is explicitly specified,
-                            otherwise to an implementation-defined value. More info:
-                            https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/'
+                          description: |-
+                            Requests describes the minimum amount of compute resources required.
+                            If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+                            otherwise to an implementation-defined value. Requests cannot exceed Limits.
+                            More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                           type: object
                       type: object
                     type:
@@ -368,16 +420,16 @@ spec:
                 description: Any additional (external) database that the runtime might
                   need, e.g. Documents database
                 items:
-                  description: "this spec is used to attach external/custom databases
-                    the DatabaseDescriptor is used to refer to the existing database,
-                    e.g. \n braintribe-databases:europe-west3:general-purpose=tcp:5555"
+                  description: "this spec is used to attach external/custom databases\nthe
+                    DatabaseDescriptor is used to refer to the existing database,
+                    e.g.\n\n\tbraintribe-databases:europe-west3:general-purpose=tcp:5555"
                   properties:
                     credentialsSecretRef:
-                      description: 'This `secretRef` points to the secret that contains
-                        the database credentials, i.e. username and password to connect
-                        to the database. The secret itself should have a `username`
-                        and a `password` key that have the related values. <br/><br/>
-                        Example: `database-credentials-secret`'
+                      description: |-
+                        This `secretRef` points to the secret that contains the database credentials, i.e. username and password
+                        to connect to the database. The secret itself should have a `username` and a `password` key that have the
+                        related values. <br/><br/>
+                        Example: `database-credentials-secret`
                       properties:
                         name:
                           description: name is unique within a namespace to reference
@@ -390,42 +442,49 @@ spec:
                       type: object
                       x-kubernetes-map-type: atomic
                     databaseName:
-                      description: 'The name of the database<br/><br/> Example: `documents`'
+                      description: |-
+                        The name of the database<br/><br/>
+                        Example: `documents`
                       maxLength: 60
                       minLength: 3
                       type: string
                     envPrefixes:
-                      description: 'For every database described by a `DatabaseSpec`
-                        there will be a set of environment variables exposed in the
-                        `tribefire-services` pods. This set of env vars  contains
-                        the following variables: <ul> <li> `${PREFIX}_DB_URL` <li>
-                        `${PREFIX}_DB_USER` <li> `${PREFIX}_DB_PASS` </ul> the values
-                        for this variables is taken from the `credentialsSecretRef`
-                        as well as the `instanceDescriptor` <br/><br/> Example: `DOCUMENTS`'
+                      description: |-
+                        For every database described by a `DatabaseSpec` there will be a set of environment variables exposed in the
+                        `tribefire-services` pods. This set of env vars  contains the following variables:
+                        <ul>
+                          <li> `${PREFIX}_DB_URL`
+                          <li> `${PREFIX}_DB_USER`
+                          <li> `${PREFIX}_DB_PASS`
+                        </ul>
+                        the values for this variables is taken from the `credentialsSecretRef` as well as the `instanceDescriptor` <br/><br/>
+                        Example: `DOCUMENTS`
                       items:
                         type: string
                       type: array
                     instanceDescriptor:
-                      description: 'The descriptor/connection string that identifies
-                        this database. This can either be a CloudSQL instance descriptor
-                        or a JDBC url. <br/><br/> Example: `jdbc:postgresql://1.2.3.4:5432/documents-demo`'
+                      description: |-
+                        The descriptor/connection string that identifies this database. This can either be a CloudSQL instance
+                        descriptor or a JDBC url. <br/><br/>
+                        Example: `jdbc:postgresql://1.2.3.4:5432/documents-demo`
                       type: string
                     name:
-                      description: 'a symbolic name to refer to this database.<br/><br/>
-                        Example: `tribecell-production`'
+                      description: |-
+                        a symbolic name to refer to this database.<br/><br/>
+                        Example: `tribecell-production`
                       maxLength: 63
                       minLength: 3
                       type: string
                     serviceAccountSecretKey:
-                      description: 'This points to the key of the `serviceAccountSecretRef`
-                        where to take the service account JSON from<br/><br/> Example:
-                        `service-account.json`'
+                      description: |-
+                        This points to the key of the `serviceAccountSecretRef` where to take the service account JSON from<br/><br/>
+                        Example: `service-account.json`
                       type: string
                     serviceAccountSecretRef:
-                      description: 'This `secretRef` points to the secret that contains
-                        the service account manifest for CloudSQL. Only needed in
-                        case you want to connect to a CloudSQL database via the cloud-sql-proxy<br/><br/>
-                        Example: `documents-cloudsql-secret`'
+                      description: |-
+                        This `secretRef` points to the secret that contains the service account manifest for CloudSQL. Only needed
+                        in case you want to connect to a CloudSQL database via the cloud-sql-proxy<br/><br/>
+                        Example: `documents-cloudsql-secret`
                       properties:
                         name:
                           description: name is unique within a namespace to reference
@@ -438,11 +497,11 @@ spec:
                       type: object
                       x-kubernetes-map-type: atomic
                     type:
-                      description: 'The type of this database. If type is `cloudsql`,
-                        the operator will provision a Google CloudSQL database. If
-                        type is `local`, the operator will deploy a local PostgreSQL
-                        container<br/><br/> Possible Values: `cloudsql`, `local` <br/>
-                        Example: `cloudsql`'
+                      description: |-
+                        The type of this database. If type is `cloudsql`, the operator will provision a Google CloudSQL database.
+                        If type is `local`, the operator will deploy a local PostgreSQL container<br/><br/>
+                        Possible Values: `cloudsql`, `local` <br/>
+                        Example: `cloudsql`
                       enum:
                       - cloudsql
                       - local
@@ -459,11 +518,11 @@ spec:
                 description: config element for DCSA support
                 properties:
                   credentialsSecretRef:
-                    description: 'This `secretRef` points to the secret that contains
-                      the database credentials, i.e. username and password to connect
-                      to the database. The secret itself should have a `username`
-                      and a `password` key that have the related values. <br/><br/>
-                      Example: `database-credentials-secret`'
+                    description: |-
+                      This `secretRef` points to the secret that contains the database credentials, i.e. username and password
+                      to connect to the database. The secret itself should have a `username` and a `password` key that have the
+                      related values. <br/><br/>
+                      Example: `database-credentials-secret`
                     properties:
                       name:
                         description: name is unique within a namespace to reference
@@ -476,20 +535,21 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   instanceDescriptor:
-                    description: 'The connection string that identifies this database.
-                      Currently only JDBC URLs are supported <br/><br/> Example: `jdbc:postgresql://1.2.3.4:5432/documents-demo`'
+                    description: |-
+                      The connection string that identifies this database. Currently only JDBC URLs are supported <br/><br/>
+                      Example: `jdbc:postgresql://1.2.3.4:5432/documents-demo`
                     type: string
                 required:
                 - credentialsSecretRef
                 - instanceDescriptor
                 type: object
               domain:
-                description: 'the domain name under which this TribefireRuntime will
-                  be reachable (via the Ingress). For instance, if the domain is set
-                  to `tribefire.cloud` , the name of the runtime is `demo`, and the
-                  namespace of the runtime is `documents`, then the TribefireRuntime
-                  will be available via `https:/demo-documents.tribefire.cloud/` <br/><br/>
-                  Possible values: any valid DNS name'
+                description: |-
+                  the domain name under which this TribefireRuntime will be reachable (via the Ingress). For instance,
+                  if the domain is set to `tribefire.cloud` , the name of the runtime is `demo`, and the namespace of the
+                  runtime is `documents`, then the TribefireRuntime will be available via `https:/demo-documents.tribefire.cloud/`
+                  <br/><br/>
+                  Possible values: any valid DNS name
                 type: string
             required:
             - components
@@ -504,16 +564,19 @@ spec:
                   description: status information about a specific component
                   properties:
                     name:
-                      description: 'name of this component<br/><br/> Examples: `services`,
-                        `control-center`'
+                      description: |-
+                        name of this component<br/><br/>
+                        Examples: `services`, `control-center`
                       type: string
                     status:
-                      description: 'status of this component<br/><br/> Examples: `available`,
-                        `unavailable`, `degraded`'
+                      description: |-
+                        status of this component<br/><br/>
+                        Examples: `available`, `unavailable`, `degraded`
                       type: string
                     urls:
-                      description: 'the URL(s) under which this component is reachable
-                        from the outside (via the ingress)<br/><br/> Examples: `https://demo-documents.tribefire.cloud/services`,`https://demo-documents.tribefire.cloud/control-center`,'
+                      description: |-
+                        the URL(s) under which this component is reachable from the outside (via the ingress)<br/><br/>
+                        Examples: `https://demo-documents.tribefire.cloud/services`,`https://demo-documents.tribefire.cloud/control-center`,
                       items:
                         type: string
                       type: array
@@ -557,30 +620,33 @@ spec:
                   type: object
                 type: array
               created:
-                description: 'Timestamp (ISO8601) when this TribefireRuntime was created.
-                  <br/><br/> Example: `2019-03-20T17:41:09Z`'
+                description: |-
+                  Timestamp (ISO8601) when this TribefireRuntime was created. <br/><br/>
+                  Example: `2019-03-20T17:41:09Z`
                 type: string
               error:
-                description: 'error status indicator. If set to `true`, somethings
-                  wrong with this TribefireRuntime. <br/><br/> Possible values: `true`,
-                  `false`'
+                description: |-
+                  error status indicator. If set to `true`, somethings wrong with this TribefireRuntime. <br/><br/>
+                  Possible values: `true`, `false`
                 type: boolean
               observedGeneration:
                 description: This field is used to track changes to the `TribefireRuntimeSpec`
                 format: int64
                 type: integer
               phase:
-                description: 'the `DeploymentPhase` this TribefireRuntime is in. For
-                  details see the docs on the `DeploymentPhase`<br/><br/> Example:
-                  `DatabaseBootstrap`'
+                description: |-
+                  the `DeploymentPhase` this TribefireRuntime is in. For details see the docs on the `DeploymentPhase`<br/><br/>
+                  Example: `DatabaseBootstrap`
                 type: string
               status:
-                description: 'a descriptive status message, such as `available`<br/>
-                  Example: `available`'
+                description: |-
+                  a descriptive status message, such as `available`<br/>
+                  Example: `available`
                 type: string
               updated:
-                description: 'Timestamp (ISO8601) when this TribefireRuntime was updated.
-                  <br/><br/> Example: `2019-03-20T19:36:39ZZ`'
+                description: |-
+                  Timestamp (ISO8601) when this TribefireRuntime was updated. <br/><br/>
+                  Example: `2019-03-20T19:36:39ZZ`
                 type: string
             type: object
         required:

@@ -26,6 +26,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/client-go/tools/record"
 	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
@@ -79,6 +80,7 @@ var (
 // TribefireRuntimeReconciler reconciles a TribefireRuntime object
 type TribefireRuntimeReconciler struct {
 	Client client.Client
+	Cache  cache.Cache
 	Scheme *runtime.Scheme
 
 	DbMgr tribefire.TribefireDatabaseMgr
@@ -812,6 +814,7 @@ func (r *TribefireRuntimeReconciler) fetchLatest(tf *tribefirev1.TribefireRuntim
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *TribefireRuntimeReconciler) SetupWithManager(mgr ctrl.Manager) error {
+	r.Cache = mgr.GetCache()
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&tribefirev1.TribefireRuntime{}).
 		Owns(&apps.Deployment{}).
@@ -859,16 +862,25 @@ func (r *TribefireRuntimeReconciler) recordEventEventually(
 }
 
 func (r *TribefireRuntimeReconciler) addSecondaryResources(c controller.Controller) error {
-
-	// Watch for changes to this Kubernetes resources
+	// Watch for changes to these Kubernetes resources
 	watchTypes := []client.Object{&apps.Deployment{}, &net.Ingress{}}
 
 	var err error
 	for _, watchType := range watchTypes {
-		err = c.Watch(&source.Kind{Type: watchType}, &handler.EnqueueRequestForOwner{
-			IsController: true,
-			OwnerType:    &tribefirev1.TribefireRuntime{},
-		})
+		handler := handler.EnqueueRequestForOwner(
+			r.Client.Scheme(),
+			r.Client.RESTMapper(),
+			&tribefirev1.TribefireRuntime{},
+			handler.OnlyControllerOwner(),
+		)
+
+		err = c.Watch(
+			source.Kind(
+				r.Cache,
+				watchType,
+				handler,
+			),
+		)
 
 		watchName := reflect.TypeOf(watchType).String()
 		if err != nil {

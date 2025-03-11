@@ -1,0 +1,27 @@
+image:
+  pullPolicy: IfNotPresent
+service:
+  type: NodePort
+ports:
+  web:
+    port: 30080
+    nodePort: 30080
+    expose:
+      default: true
+  websecure:
+    nodePort: 30090
+    expose:
+      default: false
+  traefik:
+    port: 30880
+    exposedPort: 30880
+    expose:
+      default: true
+logs:
+  general:
+    level: INFO
+  access:
+    enabled: true
+providers:
+  kubernetesCRD:
+    allowCrossNamespace: true

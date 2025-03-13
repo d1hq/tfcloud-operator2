@@ -2,17 +2,16 @@
 # Image URL to use all building/pushing image targets
 #OPERATOR_IMAGE = dockerregistry.example.com/tribefire-cloud/operator-development
 OPERATOR_DOCKER_HOST ?= docker.artifactory.braintribe.com
-#OPERATOR_DOCKER_HOST = 254787864596.dkr.ecr.eu-central-1.amazonaws.com
-
-OPERATOR_IMAGE = $(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator
-#OPERATOR_IMAGE = $(OPERATOR_DOCKER_HOST)/ecr-test
+#OPERATOR_DOCKER_HOST = 204787864596.dkr.ecr.eu-central-1.amazonaws.com
+OPERATOR_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator
 
 OPERATOR_IMAGE_DBG =$(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator-dbg
 OPERATOR_TAG = 2.2
 
 IMG ?= $(OPERATOR_IMAGE):$(OPERATOR_TAG)
 TRIBEFIRE_POSTGRESQL_IMAGE ?= bitnami/postgresql:16
-TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/postgres-checker:1.0
+TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/postgres-checker:1.1
+ETCD_OPERATOR_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/etcd-operator:20250312-3983c32
 
 # NAME_PREFIX is pre-prepended to all operator related resources, but not to tribefire resources
 # such as the tribefire-master
@@ -254,12 +253,17 @@ undeploy-traefik:
 
 .PHONY: deploy-etcd
 deploy-etcd:
+	kubectl create namespace etcd-operator
+	kubectl -n etcd-operator create secret docker-registry registry-secret --from-file=config/manager/secrets/.dockerconfigjson
 	kubectl apply -f hack/etcd-operator/crd/etcd.database.coreos.com_etcdclusters.yaml
+	sed -e "s|@@ETCD_OPERATOR_IMAGE@@|$(ETCD_OPERATOR_IMAGE)|g" < hack/etcd-operator/etcd-operator.yaml.template > hack/etcd-operator/etcd-operator.yaml
 	kubectl apply -f hack/etcd-operator/etcd-operator.yaml
 
 .PHONY: undeploy-etcd
 undeploy-etcd:
+	sed -e "s|@@ETCD_OPERATOR_IMAGE@@|$(ETCD_OPERATOR_IMAGE)|g" < hack/etcd-operator/etcd-operator.yaml.template > hack/etcd-operator/etcd-operator.yaml
 	kubectl delete -f hack/etcd-operator/etcd-operator.yaml
+	kubectl delete namespace etcd-operator
 	kubectl delete -f hack/etcd-operator/crd/etcd.database.coreos.com_etcdclusters.yaml
 
 .PHONY: undeploy-webhooks

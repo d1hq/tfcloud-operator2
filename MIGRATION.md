@@ -72,6 +72,8 @@ CertManager is required for management of self-signed certificates used by valid
 * Update Go libraries to the latest version
 * Update dependencies to maintained versions
 * Update postgres-checker image
+* Configurable location of the etcd-operator image
+  * see the environment variable `ETCD_OPERATOR_IMAGE` in `Makefile`
 
 ### Migration procedure (2.1 -> 2.2)
 
@@ -165,7 +167,7 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
             `your.docker.host`
 
         ```sh
-        TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE: your.docker.host/tribefire-cloud/postgres-checker:1.0
+        TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE: your.docker.host/tribefire-cloud/postgres-checker:1.1
         TRIBEFIRE_POSTGRESQL_IMAGE: bitnami/postgresql:16
         OPERATOR_VERSION: v2.2
         ```
@@ -185,6 +187,20 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
 
         ```sh
         kubectl -n your-namespace set image deployment/tfcloud-your-namespace-controller-manager manager=your.docker.host/tribefire-cloud/tribefire-operator:2.2
+        ```
+
+1. Update the etcd-operator. Easiest way to do this is to undeploy the existing deployment and then recreating it. After this you will need to recreate all etcd clusters. This step assumes that there is a valid file `config/manager/secrets/.dockerconfigjson` which will be used to pull the etcd-operator image.
+
+    1. Undeploy
+
+        ```sh
+        make undeploy-etcd
+        ```
+
+    1. Recreate/deploy
+
+        ```sh
+        make deploy-etcd
         ```
 
 1. Update etcd clusters. To do this you will need to recreate the etcd cluster and then restart the tribefire-master pod.

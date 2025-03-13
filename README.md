@@ -100,14 +100,19 @@ NAME      TYPE       CLUSTER-IP       EXTERNAL-IP   PORT(S)                     
 traefik   NodePort   172.20.216.206   <none>        30880:30880/TCP,80:30080/TCP   99m
 ```
 
+### Deploy the etcd-operator
+
+The location of the etcd-operator image is configurable, see the variable `ETCD_OPERATOR_IMAGE` in `Makefile`. Etcd-operator is deployed as one instance and manages all etcd clusters within the k8s cluster. This can be adjusted by removing the `-clusterwide` argument if needed.
+
+The deployment assumes that a valid `config/manager/secrets/.dockerconfigjson` exists, this credential be used to authenticate to the Docker registry for image pull.
+
 ### Deploy Operator
 
-Similar to the prerequisites, tribefire-cloud operators are deployed via the provided `Makefile`. This means that the
-previously used `deploy-operator.sh` script is not used anymore. Check the header of the `Makefile` for configurable environment variables. These control the location of images used in the deployment, adjust them to your needs.
+Similar to the prerequisites, tribefire-cloud operators are deployed via the provided `Makefile`. This means that the previously used `deploy-operator.sh` script is not used anymore. Check the header of the `Makefile` for configurable environment variables. These control the location of images used in the deployment, adjust them to your needs.
 
 When deploying the operator using the target `deploy`, an `etcd` cluster will be provisioned into the desired namespace. For that, the
-[bitnami helm chart](https://github.com/bitnami/charts/tree/main/bitnami/etcd/) is used. Our configuration is running in a stateful set with 3 replicas and has persistence and RBAC disabled. You can control all options via the corresponding
-[values.yaml](hack/etcd-helm-values.yaml) file.
+[etcd operator](https://github.com/on2itsecurity/etcd-operator) is used. Our configuration is running in a stateful set with 3 replicas and has persistence and RBAC disabled. You can control all options via the corresponding
+[manifest](config/etcd/tf-etcd-cluster.yaml) file.
 
 The namespace that will be used to deploy the etcd cluster as well as the operator can be set via `OPERATOR_NAMESPACE`.
 

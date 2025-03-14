@@ -9,7 +9,9 @@ OPERATOR_IMAGE_DBG =$(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator-d
 OPERATOR_TAG = 2.2
 
 IMG ?= $(OPERATOR_IMAGE):$(OPERATOR_TAG)
-TRIBEFIRE_POSTGRESQL_IMAGE ?= bitnami/postgresql:16
+# ddocker340/postgres:16.8-alpine3.21-20250314 is based on postgres:16.8-alpine3.21
+# libxml2 package has been updated in the image.
+TRIBEFIRE_POSTGRESQL_IMAGE ?= ddocker340/postgres:16.8-alpine3.21-20250314
 TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/postgres-checker:1.1
 ETCD_OPERATOR_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/etcd-operator:20250312-3983c32
 

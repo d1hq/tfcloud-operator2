@@ -168,7 +168,7 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
 
         ```sh
         TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE: your.docker.host/tribefire-cloud/postgres-checker:1.1
-        TRIBEFIRE_POSTGRESQL_IMAGE: bitnami/postgresql:16
+        TRIBEFIRE_POSTGRESQL_IMAGE: ddocker340/postgres:16.8-alpine3.21-20250314
         OPERATOR_VERSION: v2.2
         ```
 

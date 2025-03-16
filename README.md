@@ -122,6 +122,23 @@ Deploying an operator and an etcd cluster in the `adx` namespace is then done vi
 OPERATOR_NAMESPACE=adx make deploy
 ```
 
+* One can set more variables as in example below
+
+    ```sh
+    OPERATOR_DOCKER_HOST="your.docker.host" \
+    TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE="your.docker.host/tribefire-cloud/postgres-checker:1.1" \
+    TRIBEFIRE_POSTGRESQL_IMAGE="postgres:16.8-alpine3.21" \
+    ETCD_OPERATOR_IMAGE="your.docker.host/tribefire-cloud/etcd-operator:20250312-3983c32" \
+    OPERATOR_NAMESPACE="your-namespace" \
+        make deploy
+    ```
+
+* There's also a dry run command to check out what YAML configurations will be applied.
+
+    ```sh
+    make deploy-dry-run
+    ```
+
 The `Makefile` also includes a separate `deploy-etcd` target. This is called automatically when deploying the operator using the `deploy` target and usually is not needed. Deploying only the etcd in the `adx` namespace can be done via:
 
 ```shell

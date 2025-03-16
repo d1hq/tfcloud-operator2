@@ -178,6 +178,12 @@ pre-deploy-undeploy:
 deploy: manifests pre-deploy-undeploy ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
 
+.PHONY: deploy-dry-run
+deploy-dry-run: manifests pre-deploy-undeploy ## Dry-run deploy controller to the K8s cluster specified in ~/.kube/config.
+	$(info ### deploy-dry-run)
+	$(info This is a dry run and prints out what Kubernetes YAMLs would be applied.)
+	$(KUSTOMIZE) build config/default | cat
+
 .PHONY: render-manifests
 render-manifests: pre-deploy-undeploy
 	$(KUSTOMIZE) build config/default
@@ -279,6 +285,12 @@ deploy-prerequisites: deploy-crd deploy-cert-manager deploy-traefik deploy-etcd
 .PHONY: deploy-crd
 deploy-crd:
 	$(KUSTOMIZE) build config/crd | kubectl apply -f -
+
+.PHONY: deploy-crd-dry-run
+deploy-crd-dry-run:
+	$(info ### deploy-crd-dry-run)
+	$(info This is a dry run and prints out what Kubernetes YAMLs would be applied.)
+	$(KUSTOMIZE) build config/crd | cat
 
 .PHONY: undeploy-prerequisites
 undeploy-prerequisites: undeploy-crd undeploy-cert-manager undeploy-traefik undeploy-etcd

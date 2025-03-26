@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"strings"
 	tribefirev1 "tribefire-operator/api/v1"
 	"tribefire-operator/providers"
 
@@ -16,17 +17,19 @@ import (
 )
 
 const (
-	PostgresAppName      = "postgres"
-	PostgresPassword     = "tribefire"
-	PostgresUser         = "tribefire"
-	PostgresDatabase     = "postgres"
-	PostgresPort         = 5432
-	PostgresDefaultImage = "bitnami/postgresql:17"
+	PostgresAppName       = "postgres"
+	PostgresPassword      = "tribefire"
+	PostgresUser          = "tribefire"
+	PostgresDatabase      = "postgres"
+	PostgresPort          = 5432
+	PostgresDefaultImage  = "bitnami/postgresql:17"
+	PostgresDefaultRoRoot = "true"
 )
 
 var projectId = os.Getenv("TRIBEFIRE_GCP_DATABASES_PROJECT_ID")
 var instanceId = os.Getenv("TRIBEFIRE_GCP_DATABASES_INSTANCE_ID")
 var postgresImage = getEnvOrDefault("TRIBEFIRE_POSTGRESQL_IMAGE", PostgresDefaultImage)
+var postgresRoRoot = getEnvOrDefault("TRIBEFIRE_POSTGRESQL_RO_ROOT", PostgresDefaultRoRoot)
 
 type TribefireDatabaseMgr interface {
 	CreateDatabase(tf *tribefirev1.TribefireRuntime) (*providers.DatabaseDescriptor, error)
@@ -156,6 +159,15 @@ func (d *DefaultTribefireDatabaseMgr) createLocalDatabase(tf *tribefirev1.Tribef
 		},
 	}
 
+	//if the PostgresRoRoot is set to true modify security context and mount volumes that match bitnami layout
+	if strings.ToLower(postgresRoRoot) == "true" {
+		trueValue := true
+		podSpec = *addPostgresEmptyDirVolume(&podSpec)
+		podSpec.Spec.Containers[0].SecurityContext = &core.SecurityContext{
+			ReadOnlyRootFilesystem: &trueValue,
+		}
+	}
+
 	deployment := newDeployment(tf, PostgresAppName, &podSpec, 1)
 	addOwnerRefToObject(deployment, asOwner(tf))
 	dumpResourceToStdout(deployment)
@@ -183,6 +195,73 @@ func (d *DefaultTribefireDatabaseMgr) createLocalDatabase(tf *tribefirev1.Tribef
 		DatabaseUser:     PostgresUser,
 		DatabasePassword: PostgresPassword,
 	}, err
+}
+
+func addPostgresEmptyDirVolume(pod *core.PodTemplateSpec) *core.PodTemplateSpec {
+	// Define the volumes
+	volumes := []core.Volume{
+		{
+			Name: "data",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "empty-dir",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+		{
+			Name: "dshm",
+			VolumeSource: core.VolumeSource{
+				EmptyDir: &core.EmptyDirVolumeSource{},
+			},
+		},
+	}
+
+	// Define the volume mounts
+	volumeMounts := []core.VolumeMount{
+		{
+			Name:      "empty-dir",
+			MountPath: "/tmp",
+			SubPath:   "tmp-dir",
+		},
+		{
+			Name:      "empty-dir",
+			MountPath: "/opt/bitnami/postgresql/conf",
+			SubPath:   "app-conf-dir",
+		},
+		{
+			Name:      "empty-dir",
+			MountPath: "/opt/bitnami/postgresql/tmp",
+			SubPath:   "app-tmp-dir",
+		},
+		{
+			Name:      "dshm",
+			MountPath: "/dev/shm",
+		},
+		{
+			Name:      "data",
+			MountPath: "/bitnami/postgresql",
+		},
+	}
+
+	// Add volumes to pod template spec
+	if pod.Spec.Volumes == nil {
+		pod.Spec.Volumes = []core.Volume{}
+	}
+	pod.Spec.Volumes = append(pod.Spec.Volumes, volumes...)
+
+	// Add volume mounts to all containers in the pod template
+	for i := range pod.Spec.Containers {
+		pod.Spec.Containers[i].VolumeMounts = append(
+			pod.Spec.Containers[i].VolumeMounts,
+			volumeMounts...,
+		)
+	}
+
+	return pod
 }
 
 // creates a Cloud database, currently only Google CloudSQL is supported

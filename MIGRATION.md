@@ -110,11 +110,34 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
     make deploy-etcd
     ```
 
-1. Delete the old namespace. Ignore etcd errors this will produce, make sure that the namespace was deleted.
+1. Delete the old namespace. **NOTICE** this will also remove the namespace, so save secretes/etc! Remeber also to remove any Tribefire deployments before undeploying the operator otherwise namespace deletion will get stuck. Ignore etcd errors this will produce, make sure that the namespace was deleted.
 
-     ```sh
-     OPERATOR_NAMESPACE="your-namespace" make undeploy
-     ```
+    1. Check tribefire deployments
+
+        ```sh
+        kubectl -n your-namespace get tf
+
+        NAME           STATUS      AGE   DOMAIN   DATABASE   BACKEND   UNAVAILABLE
+        phoenix-test   available   17h            local
+        ```
+
+    1. Delete tribefire deployments
+
+        ```sh
+        kubectl -n your-namespace delete tf phoenix-test
+        ```
+
+    1. Wait till the tribefire deployment is deleted
+
+        ```sh
+        watch kubectl -n your-namespace get po
+        ```
+
+    1. Delete namespace
+
+        ```sh
+        OPERATOR_NAMESPACE="your-namespace" make undeploy
+        ```
 
 1. Create the namespace
 
@@ -122,6 +145,17 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
     OPERATOR_DOCKER_HOST="your.docker.host" \
         OPERATOR_NAMESPACE="your-namespace" make deploy
     ```
+
+    * One can define the different images more granurarly
+
+        ```sh
+        OPERATOR_DOCKER_HOST="your.docker.host" \
+        TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE="your.docker.host/tribefire-cloud/postgres-checker:1.1" \
+        TRIBEFIRE_POSTGRESQL_IMAGE="bitnami/postgresql:17" \
+        ETCD_OPERATOR_IMAGE="your.docker.host/tribefire-cloud/etcd-operator:20250312-3983c32" \
+        OPERATOR_NAMESPACE="your-namespace" \
+            make deploy
+        ```
 
     * Make sure that etcd cluster is up
 
@@ -260,3 +294,60 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
 
         kubectl -n your-namespace rollout restart deployment tribefire-master-deployment
         ```
+
+## Migration from 2.2 to 2.3
+
+### Operator version 2.3 changes
+
+* service accounts for the operator and for the Tribefire deployment are created with `automountServiceAccountToken: false`
+* pods belonging to a Tribefire deployment are created with `readOnlyRootFilesystem: true`
+  * operator will create the database pod with EmptyDir volumes that match the layout used by [Bitnami Postgresql](https://hub.docker.com/r/bitnami/postgresql)
+  * reverting to old behavior (root volume is writable) is possible by setting an environment variable `TRIBEFIRE_POSTGRESQL_RO_ROOT` to `"false"` in the operator's config map, this is not recommended and can be useful in case of using a custom Postgresql image that does not follow the filesystem layout of the Bitnami image
+* Application builds require Jinni 2.1.744.
+
+### Migration procedure (2.2 -> 2.3)
+
+One can either undeploy the operator, delete the namespace and then recreate the namespace with the latest tfcloud-operator - see the steps described in the migration procedure from 2.1 to 2.2. Or follow the instructions below.
+
+1. Update the operator's `ServiceAccount` to include `automountServiceAccountToken: false`.
+
+    1. Check service accounts
+
+        ```sh
+        kubectl -n adx get sa
+        NAME                             SECRETS   AGE
+        default                          0         17d
+        phoenix-test                     0         17h
+        tfcloud-adx-controller-manager   0         17d
+        ```
+
+    1. Edit operator's service account
+
+        ```sh
+        kubectl -n adx edit sa tfcloud-adx-controller-manager
+        ```
+
+        ```sh
+        apiVersion: v1
+        kind: ServiceAccount
+        metadata:
+          annotations:
+            kubectl.kubernetes.io/last-applied-configuration: |
+              {"apiVersion":"v1","kind":"ServiceAccount","metadata":{"annotations":{},"labels":{"app.kubernetes.io/component":"rbac","app.kubernetes.io/created-by":"tribefire-cloud","app.kubernetes.io/instance":"controller-manager-sa","app.kubernetes.io/managed-by":"kustomize","app.kubernetes.io/name":"serviceaccount","app.kubernetes.io/part-of":"tribefire-cloud"},"name":"tfcloud-adx-controller-manager","namespace":"adx"}}
+          creationTimestamp: "2025-03-07T14:26:13Z"
+          labels:
+            app.kubernetes.io/component: rbac
+            app.kubernetes.io/created-by: tribefire-cloud
+            app.kubernetes.io/instance: controller-manager-sa
+            app.kubernetes.io/managed-by: kustomize
+            app.kubernetes.io/name: serviceaccount
+            app.kubernetes.io/part-of: tribefire-cloud
+          name: tfcloud-adx-controller-manager
+          namespace: adx
+          resourceVersion: "22047765"
+          uid: 22e1c365-8073-4f42-bca0-7e1781ed2757
+        automountServiceAccountToken: false # Add this line
+        ```
+
+1. Update the operator deployment to use the image version 2.3 and mount the service account token manually as a RO volume.
+1. Then recreate any `tribefireruntimes` in the namespace.

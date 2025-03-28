@@ -10,7 +10,7 @@ import (
 func NewServiceAccount(tf *tribefirev1.TribefireRuntime) *corev1.ServiceAccount {
 
 	serviceAccountName := buildDefaultServiceAccountName(tf)
-	autoMount := true
+	autoMount := false
 	serviceAccount := &corev1.ServiceAccount{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "ServiceAccount",

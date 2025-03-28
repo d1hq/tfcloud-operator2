@@ -6,12 +6,10 @@ OPERATOR_DOCKER_HOST ?= docker.artifactory.braintribe.com
 OPERATOR_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator
 
 OPERATOR_IMAGE_DBG =$(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator-dbg
-OPERATOR_TAG = 2.2
+OPERATOR_TAG = 2.3.1
 
 IMG ?= $(OPERATOR_IMAGE):$(OPERATOR_TAG)
-# ddocker340/postgres:16.8-alpine3.21-20250314 is based on postgres:16.8-alpine3.21
-# libxml2 package has been updated in the image.
-TRIBEFIRE_POSTGRESQL_IMAGE ?= ddocker340/postgres:16.8-alpine3.21-20250314
+TRIBEFIRE_POSTGRESQL_IMAGE ?= bitnami/postgresql:16
 TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/postgres-checker:1.1
 ETCD_OPERATOR_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/etcd-operator:20250312-3983c32
 
@@ -261,8 +259,8 @@ undeploy-traefik:
 
 .PHONY: deploy-etcd
 deploy-etcd:
-	kubectl create namespace etcd-operator
-	kubectl -n etcd-operator create secret docker-registry registry-secret --from-file=config/manager/secrets/.dockerconfigjson
+	kubectl create namespace etcd-operator --dry-run=client -o yaml | kubectl apply -f -
+	kubectl -n etcd-operator create secret docker-registry registry-secret --from-file=config/manager/secrets/.dockerconfigjson --dry-run=client -o yaml | kubectl apply -f -
 	kubectl apply -f hack/etcd-operator/crd/etcd.database.coreos.com_etcdclusters.yaml
 	sed -e "s|@@ETCD_OPERATOR_IMAGE@@|$(ETCD_OPERATOR_IMAGE)|g" < hack/etcd-operator/etcd-operator.yaml.template > hack/etcd-operator/etcd-operator.yaml
 	kubectl apply -f hack/etcd-operator/etcd-operator.yaml

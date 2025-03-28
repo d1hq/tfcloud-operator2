@@ -3,6 +3,7 @@ kind: ServiceAccount
 metadata:
   name: etcd-operator
   namespace: etcd-operator
+automountServiceAccountToken: false
 
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -135,9 +136,30 @@ spec:
           volumeMounts:
             - name: "tmp"
               mountPath: "/tmp" # Only needed when using TLS
+            - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+              name: kube-api-access
+              readOnly: true
       imagePullSecrets:
         - name: registry-secret
       serviceAccountName: etcd-operator
       volumes:
         - name: "tmp"
           emptyDir: {}
+        - name: kube-api-access
+          projected:
+            defaultMode: 420
+            sources:
+            - serviceAccountToken:
+                expirationSeconds: 3607
+                path: token
+            - configMap:
+                items:
+                - key: ca.crt
+                  path: ca.crt
+                name: kube-root-ca.crt
+            - downwardAPI:
+                items:
+                - fieldRef:
+                    apiVersion: v1
+                    fieldPath: metadata.namespace
+                  path: namespace

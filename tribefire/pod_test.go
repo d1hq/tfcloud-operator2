@@ -26,7 +26,7 @@ func TestCreatePodWithVolumeMounts(t *testing.T) {
 	podSpec := createPod(tf, component, nil, MasterAppName, "/")
 	assert.Equal(t, "test-"+MasterAppName, podSpec.Name)
 	assert.Equal(t, "demo/demo:1.1.1", podSpec.Spec.Containers[0].Image)
-	assert.Equal(t, 1, len(podSpec.Spec.Volumes))
+	assert.Equal(t, 3, len(podSpec.Spec.Volumes)) //2 volumes are created by default - /writable and service account token
 	assert.Equal(t, volume.Name, podSpec.Spec.Volumes[0].Name)
 	assert.Equal(t, volume.VolumeClaimName, podSpec.Spec.Volumes[0].PersistentVolumeClaim.ClaimName)
 	assert.Equal(t, volume.Name, podSpec.Spec.Containers[0].VolumeMounts[0].Name)

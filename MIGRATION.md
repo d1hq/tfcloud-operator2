@@ -303,7 +303,7 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
 * pods belonging to a Tribefire deployment are created with `readOnlyRootFilesystem: true`
   * operator will create the database pod with EmptyDir volumes that match the layout used by [Bitnami Postgresql](https://hub.docker.com/r/bitnami/postgresql)
   * reverting to old behavior (root volume is writable) is possible by setting an environment variable `TRIBEFIRE_POSTGRESQL_RO_ROOT` to `"false"` in the operator's config map, this is not recommended and can be useful in case of using a custom Postgresql image that does not follow the filesystem layout of the Bitnami image
-* Application builds require Jinni 2.1.739.
+* Application builds require Jinni 2.1.744.
 
 ### Migration procedure (2.2 -> 2.3)
 

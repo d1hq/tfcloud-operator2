@@ -6,12 +6,10 @@ OPERATOR_DOCKER_HOST ?= docker.artifactory.braintribe.com
 OPERATOR_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator
 
 OPERATOR_IMAGE_DBG =$(OPERATOR_DOCKER_HOST)/tribefire-cloud/tribefire-operator-dbg
-OPERATOR_TAG = 2.3
+OPERATOR_TAG = 2.3.1
 
 IMG ?= $(OPERATOR_IMAGE):$(OPERATOR_TAG)
-# ddocker340/postgres:16.8-alpine3.21-20250316 is based on postgres:16.8-alpine3.21
-# libxml2 and  packages have been updated in the image.
-TRIBEFIRE_POSTGRESQL_IMAGE ?= ddocker340/postgres:16.8-alpine3.21-20250316
+TRIBEFIRE_POSTGRESQL_IMAGE ?= bitnami/postgresql:16
 TRIBEFIRE_POSTGRESQL_CHECKER_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/postgres-checker:1.1
 ETCD_OPERATOR_IMAGE ?= $(OPERATOR_DOCKER_HOST)/tribefire-cloud/etcd-operator:20250312-3983c32
 

@@ -378,6 +378,8 @@ More information can be found via the [Kubebuilder Documentation](https://book.k
 * Add separate CRD deployment target
 * Allow to specify different docker registry URL using the environment variable `OPERATOR_DOCKER_HOST`, see below.
 
+More changes on version 2.2 forward are documented at [Migration](MIGRATION.md) doc.
+
 ## Fixed issues
 
 * Etcd issues from 2.0 release were fixed by migrating to etcd operator. The operator does better job of keeping the etcd cluster healthy in case one of the pods is restarted.

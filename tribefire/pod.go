@@ -12,6 +12,8 @@ const (
 	ReadinessProbeInitialDelay = 7
 	WritableVolumeName         = "writable"
 	WritableVolumeMountPath    = "/writable"
+	WritableRunVolumeName      = "writable-run"
+	WritableRunVolumeMountPath = "/writable/run"
 )
 
 var (
@@ -62,6 +64,9 @@ func createPod(tf *tribefirev1.TribefireRuntime, component *tribefirev1.Tribefir
 
 	// always add one writable emptyDir volume
 	pod = *addEmptyDirVolume(&pod, WritableVolumeName, WritableVolumeMountPath)
+
+	// always add one writable/run emptyDir volume
+	pod = *addEmptyDirVolume(&pod, WritableRunVolumeName, WritableRunVolumeMountPath)
 
 	// add volume with the service account token
 	pod = *addServiceAccountTokenVolume(&pod)

@@ -305,6 +305,12 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
   * reverting to old behavior (root volume is writable) is possible by setting an environment variable `TRIBEFIRE_POSTGRESQL_RO_ROOT` to `"false"` in the operator's config map, this is not recommended and can be useful in case of using a custom Postgresql image that does not follow the filesystem layout of the Bitnami image
 * Application builds require Jinni 2.1.744.
 
+### Operator version 2.3.1 Changes
+
+* `/run` path is mounted as a separate volume that's writable by the container's user
+
+The version 2.3.1 is safe to deploy over the existing operator, no changes are needed.
+
 ### Migration procedure (2.2 -> 2.3)
 
 One can either undeploy the operator, delete the namespace and then recreate the namespace with the latest tfcloud-operator - see the steps described in the migration procedure from 2.1 to 2.2. Or follow the instructions below.

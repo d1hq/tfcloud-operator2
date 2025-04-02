@@ -26,7 +26,7 @@ func TestCreatePodWithVolumeMounts(t *testing.T) {
 	podSpec := createPod(tf, component, nil, MasterAppName, "/")
 	assert.Equal(t, "test-"+MasterAppName, podSpec.Name)
 	assert.Equal(t, "demo/demo:1.1.1", podSpec.Spec.Containers[0].Image)
-	assert.Equal(t, 3, len(podSpec.Spec.Volumes)) //2 volumes are created by default - /writable and service account token
+	assert.Equal(t, 4, len(podSpec.Spec.Volumes)) //3 volumes are created by default - /writable, /writable/run and service account token
 	assert.Equal(t, volume.Name, podSpec.Spec.Volumes[0].Name)
 	assert.Equal(t, volume.VolumeClaimName, podSpec.Spec.Volumes[0].PersistentVolumeClaim.ClaimName)
 	assert.Equal(t, volume.Name, podSpec.Spec.Containers[0].VolumeMounts[0].Name)
@@ -99,4 +99,22 @@ func TestCreatePodWithCustomHealthCheckPath(t *testing.T) {
 	podSpec := createPod(tf, component, nil, "SimpleCartridge", "/")
 	assert.Equal(t, "/healthz?scope=all", podSpec.Spec.Containers[0].LivenessProbe.HTTPGet.Path)
 	assert.Equal(t, "/healthz?scope=hardwired", podSpec.Spec.Containers[0].ReadinessProbe.HTTPGet.Path)
+}
+
+func TestCreatePodDefaultVolumes(t *testing.T) {
+	tf, component := createDemoRuntime()
+	podSpec := createPod(tf, component, nil, MasterAppName, "/")
+
+	// Check total number of volumes
+	assert.Equal(t, 3, len(podSpec.Spec.Volumes), "Should have exactly 3 default volumes")
+
+	// Check volume mounts in container
+	container := podSpec.Spec.Containers[0]
+	writableVolumeMounts := 0
+	for _, mount := range container.VolumeMounts {
+		if mount.ReadOnly == false {
+			writableVolumeMounts++
+		}
+	}
+	assert.Equal(t, 2, writableVolumeMounts, "Should have exactly 2 writable volume mounts")
 }

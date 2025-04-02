@@ -4,8 +4,8 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: docker.artifactory.document.one/tribefire-cloud/tribefire-operator
-  newTag: "2.3"
+  newName: docker.artifactory.braintribe.com/tribefire-cloud/tribefire-operator
+  newTag: "2.2"
 configMapGenerator:
 - envs:
   - operator.properties

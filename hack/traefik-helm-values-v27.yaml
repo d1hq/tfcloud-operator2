@@ -1,7 +1,7 @@
 image:
   pullPolicy: IfNotPresent
 service:
-  type: NodePort
+  type: LoadBalancer
 ports:
   web:
     port: 30080
@@ -14,6 +14,7 @@ ports:
       default: false
   traefik:
     port: 30880
+    nodePort: 30880
     exposedPort: 30880
     expose:
       default: true
@@ -25,3 +26,6 @@ logs:
 providers:
   kubernetesCRD:
     allowCrossNamespace: true
+  kubernetesIngress:
+    publishedService:
+      enabled: true

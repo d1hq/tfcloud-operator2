@@ -107,7 +107,8 @@ There are 2 ways of updating tfcloud-operator. 1st way, undeploy the operator, d
 1. Deploy etcd operator
 
     ```sh
-    make deploy-etcd
+    ETCD_OPERATOR_IMAGE="your.docker.host/tribefire-cloud/etcd-operator:20250312-3983c32" \
+      make deploy-etcd
     ```
 
 1. Delete the old namespace. **NOTICE** this will also remove the namespace, so save secretes/etc! Remeber also to remove any Tribefire deployments before undeploying the operator otherwise namespace deletion will get stuck. Ignore etcd errors this will produce, make sure that the namespace was deleted.
